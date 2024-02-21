@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scube_flutter_task/service/services.dart';
 import 'package:scube_flutter_task/view/project_update_view.dart';
 
 import '../model/model.dart';
-import '../service/services.dart';
 
 class ProjectView extends StatefulWidget {
   const ProjectView({super.key});
@@ -11,7 +13,6 @@ class ProjectView extends StatefulWidget {
   @override
   State<ProjectView> createState() => _ProjectViewState();
 }
-
 class _ProjectViewState extends State<ProjectView> {
   TextEditingController nameController = TextEditingController();
   TextEditingController engineerController = TextEditingController();
@@ -21,12 +22,27 @@ class _ProjectViewState extends State<ProjectView> {
   TextEditingController startTimeController = TextEditingController();
   TextEditingController endTimeController = TextEditingController();
 
+
+  /// Get Data
+  late StreamController<List<AssignedEngineer>> _streamController;
+  late List<AssignedEngineer> _assignedEngineers;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getAllAssignedEngineers();
+    _streamController = StreamController<List<AssignedEngineer>>.broadcast();
+    _assignedEngineers = [];
+    _fetchData();
   }
+
+  Future<void> _fetchData() async {
+    final data = await getAllAssignedEngineers();
+    _streamController.add(data);
+    setState(() {
+      _assignedEngineers = data;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,15 +50,15 @@ class _ProjectViewState extends State<ProjectView> {
         title: const Text("Project's"),
         centerTitle: true,
       ),
-      body: FutureBuilder<List<AssignedEngineer>>(
-        future: getAllAssignedEngineers(),
+      body: StreamBuilder<List<AssignedEngineer>>(
+        stream: _streamController.stream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           } else {
-            List<AssignedEngineer> data = snapshot.data!;
+            List<AssignedEngineer> data = snapshot.data??[];
             return ListView.builder(
               itemCount: data.length,
               itemBuilder: (context, index) {
@@ -102,6 +118,7 @@ class _ProjectViewState extends State<ProjectView> {
                           Align(
                             alignment: Alignment.bottomRight,
                               child: IconButton(onPressed: (){
+
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectUpdateView(assignedEngineer: data[index]),));
                               }, icon: Icon(Icons.edit_outlined))),
                         ],
@@ -346,6 +363,7 @@ class _ProjectViewState extends State<ProjectView> {
                            duration: int.parse(durationController.text),
                          );
                          addAssignedEngineer(newAssignedEngineer);
+                         _fetchData();
                          Navigator.of(context).pop();
                          print("Project Added Successfull");
                        },
@@ -371,5 +389,10 @@ class _ProjectViewState extends State<ProjectView> {
         ),
       ),
     );
+  }
+  @override
+  void dispose() {
+    _streamController.close(); // Close the stream controller when the widget is disposed
+    super.dispose();
   }
 }

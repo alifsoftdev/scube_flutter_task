@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scube_flutter_task/service/services.dart';
@@ -50,8 +52,24 @@ class _ProjectUpdateViewState extends State<ProjectUpdateView> {
         text: widget.assignedEngineer.endDayOfYear.toString() ?? "");
     projectDurationController = TextEditingController(
         text: widget.assignedEngineer.duration.toString() ?? "");
+    _streamController = StreamController<List<AssignedEngineer>>.broadcast();
+    _assignedEngineers = [];
+    _fetchData();
   }
 
+
+  /// Get Data
+  late StreamController<List<AssignedEngineer>> _streamController;
+  late List<AssignedEngineer> _assignedEngineers;
+
+
+  Future<void> _fetchData() async {
+    final data = await getAllAssignedEngineers();
+    _streamController.add(data);
+    setState(() {
+      _assignedEngineers = data;
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,7 +294,8 @@ class _ProjectUpdateViewState extends State<ProjectUpdateView> {
                       assignedTechnician: assignedTechnicianController.text,
                       duration: int.parse(projectDurationController.text));
                   updateAssignedEngineer(updatedAssignedEngineer);
-                  //print("Project Updated Successfull");
+                  _fetchData();
+                  print("Project Updated Successfull");
                   Navigator.push(context, MaterialPageRoute(builder: (context) => ProjectView(),));
 
                 },
