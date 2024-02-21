@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scube_flutter_task/service/services.dart';
 import 'package:scube_flutter_task/view/projects.dart';
-
 import '../model/model.dart';
 
 class ProjectUpdateView extends StatefulWidget {
