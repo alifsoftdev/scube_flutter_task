@@ -22,6 +22,12 @@ class _ProjectViewState extends State<ProjectView> {
   TextEditingController endTimeController = TextEditingController();
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getAllAssignedEngineers();
+  }
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

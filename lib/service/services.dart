@@ -34,12 +34,13 @@ import '../model/model.dart';
   }
 
 Future<void> updateAssignedEngineer(AssignedEngineer assignedEngineer) async {
+
   final response = await http.put(
-    Uri.parse('${apiUrl}update-project-elements/${assignedEngineer.id}'),
+    Uri.parse('${apiUrl}update-project-elements/${assignedEngineer.id}/'),
     headers: {'Content-Type': 'application/json'},
     body: json.encode(assignedEngineer.toJson()),
   );
-
+print(response.statusCode);
   if (response.statusCode == 200) {
     // Successful update, handle response if needed
     print('Element updated successfully');
